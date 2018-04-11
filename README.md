@@ -1,2 +1,2 @@
 # adrish
-My own shell in C
+My own shell in C.

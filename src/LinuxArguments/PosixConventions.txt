@@ -1,0 +1,19 @@
+#Posix conventions
+
+1. Program's names should have between 2-9 chars.
+2. Program's names should only have minus/digits
+3. Option's names should be composed by a single char
+4. All the options should start with -
+5. -abc should be possible instead of -a -b -c
+6. If an option requires an argument, it should be
+   separated by a space.
+7. options' arguments shouldn't be optional
+8. If an option can take multiple values as an argument,
+   these should be separated by ',' or ' '
+9. The options should be placed first on the comand line,
+   instead of the operands.
+10. special argument -- indicates end of every option.
+11. Options order doesn't matter, but the last one has
+    more priority in case of contradiction.
+12. Operands' order sometimes is important.
+13. 
