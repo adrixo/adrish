@@ -5,5 +5,8 @@
  */
 int adrish();
 
+void printUserAndDir();
 char * readLine();
+void addToHistory(char * command);
+
 int execute(char * command);
