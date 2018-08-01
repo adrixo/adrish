@@ -6,7 +6,7 @@
 int adrish();
 
 void printUserAndDir();
-char * readLine();
+char ** readLineAndSplit();
 void addToHistory(char * command);
 
-int execute(char * command);
+int execute(char ** command);

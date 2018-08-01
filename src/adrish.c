@@ -8,19 +8,18 @@
 int adrish(){
 
   int loopFlag = 1;
-  char * command;
+  char ** command;
 
   //Start the main loop
   while(loopFlag){
     //Print the shell info and read a command
     printUserAndDir();
 
-    command = readLine();
-    addToHistory(command);
+    command = readLineAndSplit();
 
-    //exec script
     //Interpretation and execution
     loopFlag = execute(command);
+
     free(command);
   }
 
@@ -35,23 +34,31 @@ void printUserAndDir(){
   printf("%s@%s: ", user, cwd);
 }
 
-char * readLine(){
+char ** readLineAndSplit(){
 
+  int c, position = 0;
   int bufsize = LINE_BUFFER;
+
   char * line = calloc(bufsize, sizeof(char));
   if(line == NULL){
     printf("ReadLine: Malloc error.");
     exit(EXIT_FAILURE);
   }
 
-  int c, position = 0;
+  char **args = calloc(bufsize, sizeof(char));
+  if(args == NULL){
+    printf("ReadLine: Malloc error.");
+    exit(EXIT_FAILURE);
+  }
 
+  /*"scanf" area*/
   while (1) {
     c = getchar();
 
     if (c == EOF || c == '\n') {
       line[++position] = '\0';
-      return line;
+      addToHistory(line);
+      break;
     } /*else if ( c == '\r'){ //Unecesary part in case of non workig del
         printf("%c[2K", 27);  //clear a line
         printUserAndDir();
@@ -72,20 +79,38 @@ char * readLine(){
       }
     }
   }
+  /*Split area*/
+  args[0] = strtok(line, " ");
+  for(position=1; args[position-1] != NULL; position++){
+    args[position] = strtok(line, " ");
+  }
+  args[position]=NULL;
+  return args;
 }
 
 void addToHistory(char * command){
-  //get current home route getenv;
-  //create or apend to file
-  //close file;
-  ;
+  char * home;
+  FILE * f;
+
+  char hfile[20] = "/.adrish_history";
+
+  home = getenv("HOME");
+  strcat(home, hfile);        // char * strcpy (dest + strlen (dest), src);
+
+  f = fopen( home , "a");
+  if(f == NULL) {
+    printf("Error: addToHistory opening file.\n");
+    return;
+  }
+  fprintf(f, "%s\n", command);
+
+  fclose(f);
 }
 
-
-int execute(char * command){
+int execute(char ** command){
   int pid, status;
-  printf("%s. \n", command);
-  if(strcmp(command,"exit")==0)
+  printf("%s. \n", command[0]);
+  if(strcmp(command[0],"exit")==0)
     return 0;
 
   pid = fork();
@@ -94,11 +119,17 @@ int execute(char * command){
       printf ("Error: fork in execute. \n");
       break;
     case 0:
-      printf("Executing %s\n", command);
-      exit(EXIT_FAILURE);
+      printf("Executing %s\n", command[0]);
+      //if(execvp(args[0], args) == -1){
+        //printf("Error: command execution problem");
+      //}
+      exit(EXIT_SUCCESS); //the child should die
       break;
     default:
-      waitpid(pid, &status, 0);
+      while (!WIFEXITED(status)) {  //http://www.gnu.org/software/libc/manual/html_node/Process-Completion-Status.html
+        waitpid(pid, &status, WUNTRACED);
+      }
   }
+
   return 1;
 }
