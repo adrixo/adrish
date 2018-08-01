@@ -79,12 +79,16 @@ char ** readLineAndSplit(){
       }
     }
   }
+  
   /*Split area*/
-  args[0] = strtok(line, " ");
-  for(position=1; args[position-1] != NULL; position++){
-    args[position] = strtok(line, " ");
+  args[0] = strtok(line, " \t\r\n\a");
+  position = 0;
+  while(args[position]!=NULL){
+    position++;
+    args[0] = strtok(line, " \t\r\n\a");
   }
   args[position]=NULL;
+
   return args;
 }
 
