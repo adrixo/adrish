@@ -20,6 +20,7 @@ int adrish(){
     //Interpretation and execution
     loopFlag = execute(command);
 
+
     free(command);
   }
 
@@ -41,13 +42,13 @@ char ** readLineAndSplit(){
 
   char * line = calloc(bufsize, sizeof(char));
   if(line == NULL){
-    printf("ReadLine: Malloc error.");
+    printf("ReadLine: calloc error.");
     exit(EXIT_FAILURE);
   }
 
   char **args = calloc(bufsize, sizeof(char));
   if(args == NULL){
-    printf("ReadLine: Malloc error.");
+    printf("ReadLine: calloc error.");
     exit(EXIT_FAILURE);
   }
 
@@ -59,7 +60,7 @@ char ** readLineAndSplit(){
       line[++position] = '\0';
       addToHistory(line);
       break;
-    } /*else if ( c == '\r'){ //Unecesary part in case of non workig del
+    } /*else if ( c == '\r'){ //Unecesary part becouse bash has a buffer
         printf("%c[2K", 27);  //clear a line
         printUserAndDir();
         position--;
@@ -79,13 +80,13 @@ char ** readLineAndSplit(){
       }
     }
   }
-  
+
   /*Split area*/
   args[0] = strtok(line, " \t\r\n\a");
   position = 0;
   while(args[position]!=NULL){
     position++;
-    args[0] = strtok(line, " \t\r\n\a");
+    args[position] = strtok(NULL, " \t\r\n\a");
   }
   args[position]=NULL;
 
@@ -93,46 +94,52 @@ char ** readLineAndSplit(){
 }
 
 void addToHistory(char * command){
-  char * home;
+  char * env_home;
+  char * cpy_home;
   FILE * f;
-
   char hfile[20] = "/.adrish_history";
 
-  home = getenv("HOME");
-  strcat(home, hfile);        // char * strcpy (dest + strlen (dest), src);
+  env_home = getenv("HOME");
+  cpy_home = calloc(sizeof(env_home),sizeof(char));
+  if(cpy_home==NULL){
+    printf("Error: addToHistory calloc.\n");
+    return;
+  }
 
-  f = fopen( home , "a");
+  strcpy(cpy_home,env_home);
+  strcat(env_home, hfile);        // char * strcpy (dest + strlen (dest), src);
+
+  f = fopen( env_home , "a");
   if(f == NULL) {
     printf("Error: addToHistory opening file.\n");
+    strcpy(env_home,cpy_home);
     return;
   }
   fprintf(f, "%s\n", command);
 
+  strcpy(env_home,cpy_home);
   fclose(f);
 }
 
 int execute(char ** command){
   int pid, status;
-  printf("%s. \n", command[0]);
+
   if(strcmp(command[0],"exit")==0)
     return 0;
 
   pid = fork();
   switch(pid){
     case -1:
-      printf ("Error: fork in execute. \n");
+      printf ("Error: child from fork during execution. \n");
       break;
     case 0:
-      printf("Executing %s\n", command[0]);
-      //if(execvp(args[0], args) == -1){
-        //printf("Error: command execution problem");
-      //}
+      if(execvp(command[0], command) == -1){
+        printf("Error: execvp problem, command not found?\n");
+      }
       exit(EXIT_SUCCESS); //the child should die
       break;
     default:
-      while (!WIFEXITED(status)) {  //http://www.gnu.org/software/libc/manual/html_node/Process-Completion-Status.html
-        waitpid(pid, &status, WUNTRACED);
-      }
+      waitpid(pid, &status, WUNTRACED);
   }
 
   return 1;
