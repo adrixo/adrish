@@ -16,4 +16,4 @@
 11. Options order doesn't matter, but the last one has
     more priority in case of contradiction.
 12. Operands' order sometimes is important.
-13. 
+13. ¿Ilegal?

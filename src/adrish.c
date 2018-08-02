@@ -1,10 +1,17 @@
 #include "adrish.h"
+#include "commands.c"
 #include <unistd.h>
 #include <string.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>
 
+/*
+ * Main shell loop:
+ *    1. Print adrish information.
+ *    2. Read user input
+ *    3. Execute command
+ */
 int adrish(){
 
   int loopFlag = 1;
@@ -20,13 +27,16 @@ int adrish(){
     //Interpretation and execution
     loopFlag = execute(command);
 
-
     free(command);
   }
 
   return 1;
 }
 
+/*
+ * Prints the username and the current directory
+ * forming the promp.
+ */
 void printUserAndDir(){
   char cwd[512];
   char user[32];
@@ -35,6 +45,11 @@ void printUserAndDir(){
   printf("%s@%s: ", user, cwd);
 }
 
+/*
+ * 1. Reads from the user's input
+ * 2. and split the whole string into arguments.
+ * returning them in an array.
+ */
 char ** readLineAndSplit(){
 
   int c, position = 0;
@@ -71,6 +86,7 @@ char ** readLineAndSplit(){
         line[position++] = c;
       }
 
+    //If we dont have enough space in the line, realloc it
     if (position >= bufsize) {
       bufsize += LINE_BUFFER;
       line = realloc(line, bufsize);
@@ -93,6 +109,9 @@ char ** readLineAndSplit(){
   return args;
 }
 
+/*
+ *
+ */
 void addToHistory(char * command){
   char * env_home;
   char * cpy_home;
@@ -106,6 +125,8 @@ void addToHistory(char * command){
     return;
   }
 
+//we need to make a copy of env_home becouse the pointer
+//points to the env. var. and replace it again later.
   strcpy(cpy_home,env_home);
   strcat(env_home, hfile);        // char * strcpy (dest + strlen (dest), src);
 
@@ -121,11 +142,24 @@ void addToHistory(char * command){
   fclose(f);
 }
 
+/*
+ * This function create the subprocess responsible for executing
+ * the command, returning 0 if exit is typed.
+ * We can't call 'cd' directly and probably we can add other adrish
+ * functions in the future, so first it calls other functions existing
+ * in the program itself.
+ */
 int execute(char ** command){
-  int pid, status;
+
+  if(comandExists(command)){
+    return 1;
+  }
 
   if(strcmp(command[0],"exit")==0)
-    return 0;
+  return 0;
+
+  int pid, status;
+
 
   pid = fork();
   switch(pid){
@@ -139,7 +173,7 @@ int execute(char ** command){
       exit(EXIT_SUCCESS); //the child should die
       break;
     default:
-      waitpid(pid, &status, WUNTRACED);
+      waitpid(pid, &status, WUNTRACED); //waiting for the child death to continue
   }
 
   return 1;
