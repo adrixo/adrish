@@ -53,7 +53,7 @@ void printUserAndDir(){
 char ** readLineAndSplit(){
 
   int c, position = 0;
-  int bufsize = LINE_BUFFER;
+  int bufsize = BUFSIZ;
 
   char * line = calloc(bufsize, sizeof(char));
   if(line == NULL){
@@ -88,7 +88,7 @@ char ** readLineAndSplit(){
 
     //If we dont have enough space in the line, realloc it
     if (position >= bufsize) {
-      bufsize += LINE_BUFFER;
+      bufsize += BUFSIZ;
       line = realloc(line, bufsize);
       if (line == NULL){
         printf("ReadLine: Buffer error.");
