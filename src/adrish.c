@@ -1,7 +1,14 @@
+//TODO: buffers?
+//http://man7.org/linux/man-pages/man3/setbuf.3.html
+
 #include "adrish.h"
 #include "commands.c"
 #include <unistd.h>
 #include <string.h>
+
+#include <errno.h>
+//Each process has his own predefined variable:
+// extern int errno;
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -57,13 +64,13 @@ char ** readLineAndSplit(){
 
   char * line = calloc(bufsize, sizeof(char));
   if(line == NULL){
-    printf("ReadLine: calloc error.");
+    perror("ReadLine: calloc error.");
     exit(EXIT_FAILURE);
   }
 
   char **args = calloc(bufsize, sizeof(char));
   if(args == NULL){
-    printf("ReadLine: calloc error.");
+    perror("ReadLine: calloc error.");
     exit(EXIT_FAILURE);
   }
 
@@ -91,7 +98,7 @@ char ** readLineAndSplit(){
       bufsize += BUFSIZ;
       line = realloc(line, bufsize);
       if (line == NULL){
-        printf("ReadLine: Buffer error.");
+        perror("ReadLine: Buffer error.");
         exit(EXIT_FAILURE);
       }
     }
@@ -121,7 +128,7 @@ void addToHistory(char * command){
   env_home = getenv("HOME");
   cpy_home = calloc(sizeof(env_home),sizeof(char));
   if(cpy_home==NULL){
-    printf("Error: addToHistory calloc.\n");
+    perror("Error: addToHistory calloc.\n");
     return;
   }
 
@@ -132,7 +139,7 @@ void addToHistory(char * command){
 
   f = fopen( env_home , "a");
   if(f == NULL) {
-    printf("Error: addToHistory opening file.\n");
+    perror("Error: addToHistory opening file.\n");
     strcpy(env_home,cpy_home);
     return;
   }
@@ -164,7 +171,7 @@ int execute(char ** command){
   pid = fork();
   switch(pid){
     case -1:
-      printf ("Error: child from fork during execution. \n");
+      perror ("Error: child from fork during execution. \n");
       break;
     case 0:
       if(execvp(command[0], command) == -1){

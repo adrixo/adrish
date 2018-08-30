@@ -1,5 +1,5 @@
 
-#define LINE_BUFFER 10
+//#define LINE_BUFFER 10
 /*
  * shell main loop
  */
