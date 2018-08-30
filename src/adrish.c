@@ -7,8 +7,10 @@
 #include <string.h>
 
 #include <errno.h>
-//Each process has his own predefined variable:
-// extern int errno;
+//  Each process has his own predefined variable:
+//   extern int errno;
+//  I'm using perror to notify problems, but i could use char * strerror(int errnum);
+//    fprintf(stderr, "%s : error: %s", argv[0], sterror(errno))
 
 #include <sys/types.h>
 #include <sys/wait.h>

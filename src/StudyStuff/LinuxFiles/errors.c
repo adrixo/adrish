@@ -7,3 +7,7 @@ if( some_sistem_call(param1,param2) < 0 ){
     param1, param2, strerror(errno));
     return 1;
 }
+
+/*
+ * __DATE__, __NAME__, __LINE__, __TIME__, __func__
+ */
